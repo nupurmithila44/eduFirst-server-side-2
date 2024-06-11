@@ -60,6 +60,8 @@ async function run() {
     const classCollection = client.db('euFirstDB').collection('class');
     const techCollection = client.db('euFirstDB').collection('tech');
     const paymentCollection = client.db('euFirstDB').collection('payment');
+    const assignCollection = client.db('euFirstDB').collection('assignment');
+    const techerReportCollection = client.db('euFirstDB').collection('techerReport');
 
 
 
@@ -153,7 +155,7 @@ async function run() {
 
    // student class data from db
    app.get('/myClassEnroll', async (req, res)=>{
-    const result = await classCollection.find().toArray()
+    const result = await paymentCollection.find().toArray()
       res.send(result)
    })
 
@@ -218,7 +220,32 @@ async function run() {
       const result = await techCollection.find().toArray()
       res.send(result)
     })
+
+    app.get('/tech/:id',async(req,res)=>{
+      const id = req.params.id;
+      const query ={_id: new ObjectId(id)}
+      const result = await classCollection.findOne(query)
+      res.send(result)
+    })
+
+    app.put('/assignment', async (req, res) => {
+      const teach = req.body;
+      console.log('all teach', teach)
+      const result = await assignCollection.insertOne(teach)
+      res.send(result)
+    });
+
+    app.get('/assigntable', async(req,res)=>{
+      const result = await assignCollection.find().toArray()
+      res.send(result)
+    })
   
+    app.put('/teReport', async (req, res) => {
+      const teach = req.body;
+      console.log('all teach', teach)
+      const result = await techerReportCollection.insertOne(teach)      
+      res.send(result)
+    });
     
 
 
@@ -346,18 +373,19 @@ async function run() {
   })
 
 
-  app.post('/payments/:id', async (req, res) => {
+  app.put('/payments/:id', async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) }
     const payment = req.body;
     const paymentResult = await paymentCollection.insertOne(payment);
+    const updateDoc ={
+      $inc: {
+        enrollment : +1
+      }
+    }
+    const updateResult = await classCollection.updateOne(query, updateDoc);
     console.log('payment infoo', payment)
-
-    //carefully delete each item from the cart
-    const query = { _id: new ObjectId (id)}
-    const deleteResult = await classCollection.deleteOne(query)
-
-
-    //carefully delete each item from the cart
-    res.send({ paymentResult, deleteResult })
+    res.send({paymentResult, updateResult})
   })
 
     // Send a ping to confirm a successful connection
