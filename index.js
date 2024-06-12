@@ -11,7 +11,7 @@ const port = process.env.PORT || 8000;
 
 // middleware
 const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: ['http://localhost:5173',  'https://edufirst-client-side.netlify.app'],
   credentials: true,
   optionSuccessStatus: 200,
 }
@@ -69,7 +69,7 @@ async function run() {
     app.post('/jwt', async (req, res) => {
       const user = req.body
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: '365d',
+        expiresIn: '1h',
       })
       res
         .cookie('token', token, {
@@ -149,43 +149,43 @@ async function run() {
       const updateDoc = {
         $set: { ...user, timestamp: Date.now() },
       }
-      const result = await userCollection.updateOne(query,updateDoc)
+      const result = await userCollection.updateOne(query, updateDoc)
       res.send(result)
     })
 
-   // student class data from db
-   app.get('/myClassEnroll', async (req, res)=>{
-    const result = await paymentCollection.find().toArray()
+    // student class data from db
+    app.get('/myClassEnroll', async (req, res) => {
+      const result = await paymentCollection.find().toArray()
       res.send(result)
-   })
+    })
 
 
 
 
     // on all Class data from db
 
-    app.get('/allClass', async (req, res)=>{
+    app.get('/allClass', async (req, res) => {
       const result = await classCollection.find().toArray()
       res.send(result)
     })
 
-    app.patch('/allClass/:techerEmail', async(req, res) =>{
-      const email =req.params.techerEmail;
-      const query = {email: email}
-      const updateRole ={
-        $set: {        
+    app.patch('/allClass/:techerEmail', async (req, res) => {
+      const email = req.params.techerEmail;
+      const query = { email: email }
+      const updateRole = {
+        $set: {
           status: 'approved'
         }
       }
-      const result = await classCollection.updateOne(query,updateRole)
-      res.send({result})
+      const result = await classCollection.updateOne(query, updateRole)
+      res.send({ result })
     })
 
-  
-    app.patch('/allReject/:email',  async(req,res)=>{
-      const email =req.params.email;
-      const query = {email: email}
-      const updateDoc ={
+
+    app.patch('/allReject/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email }
+      const updateDoc = {
         $set: {
           status: 'Rejected'
         }
@@ -195,35 +195,35 @@ async function run() {
 
     })
 
-    app.get('/allClassCard/accepted', async (req, res)=>{
-      const result = await classCollection.find({status: 'approved'}).toArray()
+    app.get('/allClassCard/accepted', async (req, res) => {
+      const result = await classCollection.find({ status: 'approved' }).toArray()
       res.send(result)
     })
 
-   app.get('/allClassCard/:id', async(req,res)=>{
-    const id = req.params.id;
-    const query = {_id: new ObjectId(id)}
-    const result = await classCollection.findOne(query)
-    res.send(result)
-   })
+    app.get('/allClassCard/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await classCollection.findOne(query)
+      res.send(result)
+    })
 
-   app.get('/payment/:id', async(req,res)=>{
-    const id = req.params.id;
-    const query = {_id: new ObjectId(id)}
-    const result = await classCollection.findOne(query)
-    res.send(result)
-   })
+    app.get('/payment/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await classCollection.findOne(query)
+      res.send(result)
+    })
 
 
-     //Techer request ......................
-    app.get('/addteach', async (req, res)=>{
+    //Techer request ......................
+    app.get('/addteach', async (req, res) => {
       const result = await techCollection.find().toArray()
       res.send(result)
     })
 
-    app.get('/tech/:id',async(req,res)=>{
+    app.get('/tech/:id', async (req, res) => {
       const id = req.params.id;
-      const query ={_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await classCollection.findOne(query)
       res.send(result)
     })
@@ -235,26 +235,48 @@ async function run() {
       res.send(result)
     });
 
-    app.get('/assigntable', async(req,res)=>{
+    app.get('/assigntable', async (req, res) => {
       const result = await assignCollection.find().toArray()
       res.send(result)
     })
-  
+
     app.put('/teReport', async (req, res) => {
       const teach = req.body;
       console.log('all teach', teach)
-      const result = await techerReportCollection.insertOne(teach)      
+      const result = await techerReportCollection.insertOne(teach)
       res.send(result)
     });
-    
+
+    // get Home page
+    app.get('/feadback', async (req, res) => {
+      const result = await techerReportCollection.find().toArray()
+      res.send(result)
+    })
+
+    app.get('/hightstEnroll', async (req, res) => {
+      const result = await paymentCollection.find().toArray()
+      res.send(result)
+    })
+
+    app.get('/totalCollection', async (req, res) => {
+      const userResult = await userCollection.estimatedDocumentCount()
+      const classResult = await classCollection.estimatedDocumentCount()
+      const enrollresult = await paymentCollection.estimatedDocumentCount()
+      res.send({ userResult, classResult,enrollresult })
+    })
 
 
 
-    app.patch('/addteach/:id/:techerEmail', async(req, res) =>{
+
+
+
+
+
+    app.patch('/addteach/:id/:techerEmail', async (req, res) => {
       const id = req.params.id;
-      const email =req.params.techerEmail;
-      const filter ={_id: new ObjectId(id)}
-      const updateDoc ={
+      const email = req.params.techerEmail;
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
         $set: {
           role: 'techer',
           status: 'accepted'
@@ -262,15 +284,15 @@ async function run() {
       }
       const result = await techCollection.updateOne(filter, updateDoc)
 
-      const query = {email: email}
-      const updateRole ={
+      const query = { email: email }
+      const updateRole = {
         $set: {
           role: 'techer',
           status: 'Accepted'
         }
       }
-      const userRole = await userCollection.updateOne(query,updateRole)
-      res.send({result, userRole})
+      const userRole = await userCollection.updateOne(query, updateRole)
+      res.send({ result, userRole })
     })
 
     app.put('/addteach', async (req, res) => {
@@ -284,18 +306,18 @@ async function run() {
     app.patch('/addteach/:id/:techerEmail', async (req, res) => {
       const id = req.params.id;
       console.log(id)
-      const email =req.params.techerEmail;
+      const email = req.params.techerEmail;
       console.log(email)
       const filter = { _id: new ObjectId(id) }
       const result = await techCollection.deleteOne(filter)
 
-      const query = {email: email}
+      const query = { email: email }
       const userRole = await userCollection.deleteOne(query)
 
       res.send(result, userRole)
     })
 
-    app.delete('/allClass/:id',  async (req, res) => {
+    app.delete('/allClass/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
       const result = await classCollection.deleteOne(query);
@@ -357,36 +379,36 @@ async function run() {
       res.send(result);
     })
 
-   //payment Intent
-   app.post('/create-payment-intent', async (req, res) => {
-    const { price } = req.body;
-    const amount = parseInt(price * 100);
-    console.log(amount, 'amount inside the intent')
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount,
-      currency: 'usd',
-      payment_method_types: ['card']
-    });
-    res.send({
-      clientSecret: paymentIntent.client_secret,
+    //payment Intent
+    app.post('/create-payment-intent', async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+      console.log(amount, 'amount inside the intent')
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card']
+      });
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      })
     })
-  })
 
 
-  app.put('/payments/:id', async (req, res) => {
-    const id = req.params.id;
-    const query = { _id: new ObjectId(id) }
-    const payment = req.body;
-    const paymentResult = await paymentCollection.insertOne(payment);
-    const updateDoc ={
-      $inc: {
-        enrollment : +1
+    app.put('/payments/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const payment = req.body;
+      const paymentResult = await paymentCollection.insertOne(payment);
+      const updateDoc = {
+        $inc: {
+          enrollment: +1
+        }
       }
-    }
-    const updateResult = await classCollection.updateOne(query, updateDoc);
-    console.log('payment infoo', payment)
-    res.send({paymentResult, updateResult})
-  })
+      const updateResult = await classCollection.updateOne(query, updateDoc);
+      console.log('payment infoo', payment)
+      res.send({ paymentResult, updateResult })
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
